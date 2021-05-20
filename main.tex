@@ -1,0 +1,205 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{booktabs}
+\usepackage{graphicx}
+\graphicspath{ {./fig/} }
+\title{Global, high resolution mapping of NO2}
+\author{lu et al}
+\date{April 2020}
+
+\begin{document}
+
+\maketitle
+
+\abstract
+
+High-resolution (<100m) mapping of NO2 provides opportunities to study the relationship between personal air pollution exposure and health over large populations. Statistical modelling of NO2 at the global scale provides high-resolution estimations for countries with deficient ground station measurements and provides air pollution maps and human exposures with consistent uncertainties for global health studies. Our objective is to develop temporally-resolved statistical learning models, understanding the temporal dynamics of NO2 and the contributing sources, and open-source our global NO2 prediction maps at 100 m resolution. The global maps are provided at various temporal aggregations (e.g. separating between weekdays and weekends, day and night) and spatial aggregations (e.g. multiple gridded resolutions, administrative units) to facilitate global exposure assessment. To create these maps, we compiled from multiple sources a dataset of hourly NO2 measurements from more than 7000 ground stations over the globe, which is a dataset that is considerably larger in size and spatio-temporal coverage than used in recent high-resolution NO2 mapping studies. For statistical modelling, geospatial predictors include Sentinel-5 satellite (Tropomi instrument) measurements, variables relating to the emission sources (e.g., road network), dispersion processes (e.g., meteorological variables), elevation and socioeconomic indicators (i.e. VIIRS nightlight data). We evaluate various statistical models including linear models, ensemble tree-based models, deep convolution models, stacked models with regularisation, and hierarchical modelling strategies and select the optimal one for mapping. Evaluation of models includes uncertainty assessment as well as spatial validation methods. 
+
+\section{Introduction}
+Opportunities in global mapping of NO2, limitation in current studies. 
+weekday and weekend, day, night: statistical predictive, exposure assessment
+
+\subsection{Main objective}
+ 
+ \begin{enumerate}
+    
+\item Understanding global no2
+Patterns over time, comparing the temporal patterns between difference areas.
+
+\item High resolution,  temporal global NO2 map product for 2017
+
+
+\item
+Comparison of patterns between high resolution mapping and Tropomi 
+
+  
+
+ \end{enumerate}
+
+
+ 
+
+\section{Method}
+\subsection{Data}
+
+Original data and source
+\begin{verbatim}
+Openstreetmap; 13 apr 2020
+MERIT DEM; 90m
+GHS-POP R2019A; 250m
+ERA5-Land; 9km
+        resolution	  nadir
+Temperature	0.1 degree	10km
+Wind 	    0.1 degree	10km
+population	0.0025 degree 	250m
+Night light	0.0042 degree	500m
+radiation	0.008	800m
+
+\end{verbatim}
+
+
+
+buffered predictor candidates \ref{tab-buff-pred}
+  
+\begin{table*}\centering
+\caption{buffered candidate predictors}
+\label{tab-buff-pred}
+\begin{tabular}{@{}lll@{}}\toprule
+type & unit & buffersizes [m] \\ \midrule
+roads 1 & m & 25, 50, 100, 300, 500, 1000, 3000, 5000 \\
+roads 2 & m& 25, 50, 100, 300, 500, 1000, 3000, 5000 \\
+roads 3 & m& 25, 50, 100, 300, 500, 1000, 3000, 5000 \\
+population  &? & 1000, 3000, 5000 \\
+industry  & $m^2$ & 25, 50, 100, 300, 500, 1000, 3000, 5000\\
+nightlight   & ?& 450, 900, 3150, 4950\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+none-buffered: wind, temperature, tropomi, radiation, elevation.
+
+\subsection{Data preprocessing}
+
+\subsection{Modelling}
+Modelling separated for each time step.
+
+We chose XGB following...
+
+A comparison is made with RF. 
+
+XGB tuning
+
+\subsection{Validation}
+
+Accuracy matrix:
+
+R2, RMSE, MAE, IQR
+
+- Boostrapped CV
+
+- Spatial cross-validation
+
+Use Relative measures: 
+R2, Relative RMSE (RMSE/median), for non-stationary NO2. 
+
+
+Sp1 spatial-blocked CV,
+Creating grid and add a column of cell id to dataframe 
+
+
+Sp2 More specific for air quality, based on the local environment of ground stations using customised predictors (e.g. road class\_2\_ 25>0 \&\& population >1000)
+
+
+
+\subsection{Mapping} 
+
+\section{Result}
+1. Validation result
+cross validation, model interpretation 
+                   , prediction interval (need research time) 					, in appendix comparison with random forest
+                   
+2. Map
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{fig/glomap.png}
+    \caption{global map, daytime, weekday, average}
+    \label{fig:map}
+\end{figure}
+
+3. spatial pattern analysis
+
+Select cities in China, Africa, Europe, US
+
+AMS:
+52.354582833305756, 4.874427182812675
+
+Nijmegen
+51.81313579589716, 5.8352147344374545
+
+Shenzhen
+22.55745408074088, 114.05520558671897
+
+Ethiopia
+8.665577682209845, 39.47173655046589
+
+Phoenix
+33.44711368710278, -112.07977386190278
+
+4. temporal pattern comparison
+
+Systematically select urban, suburban, industrial areas and compare their four temporal maps. 
+
+5. map vs. tropomi 
+
+6. where do we publish it, a web-service for viewing will greatly help with the publicaiton. 
+
+
+1, The four maps in 10 km resolution with 100 m zoom in windows for details. 
+
+
+					
+4, further validation: 
+1)	Compare with other large-scale maps (ESCAPE or more recent maps)
+2)	Other mobile sensing data, google car data? 
+
+2.	On a map service, e.g. mapbox, publish the 4 maps
+3.	In a data depository, publish the predictors and 4 result maps (possibly 100m resolution)
+
+\section{Discussion}
+Result discussion. 
+Incompleteness OSM is a well-recognised issue and has to be discussed. 
+
+\section{Conclusion}
+
+
+
+ \section{To be clarified}
+
+ 1. the area (extent) of the world.   
+ 2. computation time
+ 3. all data convert back to wgs84 (4626) before merging?
+ - gdal\_merge requires the same CRS for datasets to be merged. 
+- we could consider to merge to 6x6 degree and publish those, similar approach is done by others
+- how to publish data? (zenodo etc); creating a viewer and host?
+
+\end{document}
+
+\urlhttps{https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html} nightlight, 6 tiles, 2016 annual is available. 
+
+
+
+\section{Tasks and time schedule}
+
+Night light of 2017, monthly
+NOAA/NCEI - Earth Observation Group - Defense Meteorological Satellite Progam, Boulder
+"vcm-orm-ntl"
+\urlhttps{https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html}
+
+some minor updates for tomorrow based on the document and manuscript:
+\begin{verbatim}
+ 
+-M: overlap needed - all data convert back to wgs84 4626 before merging
+-M: climate data has lots of missing data
+
+\end{verbatim}
