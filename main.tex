@@ -17,7 +17,7 @@
 
 \abstract
 
-High-resolution (<100m) mapping of NO2 provides opportunities to study the relationship between personal air pollution exposure and health over large populations. Statistical modelling of NO2 at the global scale provides high-resolution estimations for countries with deficient ground station measurements and provides air pollution maps and human exposures with consistent uncertainties for global health studies. Our objective is to develop temporally-resolved statistical learning models, understanding the temporal dynamics of NO2 and the contributing sources, and open-source our global NO2 prediction maps at 100 m resolution. The global maps are provided at various temporal aggregations (e.g. separating between weekdays and weekends, day and night) and spatial aggregations (e.g. multiple gridded resolutions, administrative units) to facilitate global exposure assessment. To create these maps, we compiled from multiple sources a dataset of hourly NO2 measurements from more than 7000 ground stations over the globe, which is a dataset that is considerably larger in size and spatio-temporal coverage than used in recent high-resolution NO2 mapping studies. For statistical modelling, geospatial predictors include Sentinel-5 satellite (Tropomi instrument) measurements, variables relating to the emission sources (e.g., road network), dispersion processes (e.g., meteorological variables), elevation and socioeconomic indicators (i.e. VIIRS nightlight data). We evaluate various statistical models including linear models, ensemble tree-based models, deep convolution models, stacked models with regularisation, and hierarchical modelling strategies and select the optimal one for mapping. Evaluation of models includes uncertainty assessment as well as spatial validation methods. 
+High-resolution (100 m resolution or higher) mapping of NO2 provides opportunities to study the relationship between personal air pollution exposure and health over large populations. Statistical modelling of NO2 at the global scale provides high-resolution estimations for countries with deficient ground station measurements and provides air pollution maps and human exposures with consistent uncertainties for global health studies. Our objective is to develop temporally-resolved statistical learning models, understanding the temporal dynamics of NO2 and the contributing sources, and open-source our global NO2 prediction maps at 100 m resolution. The global maps are provided at various temporal aggregations (e.g. separating between weekdays and weekends, day and night) and spatial aggregations (e.g. multiple gridded resolutions, administrative units) to facilitate global exposure assessment. To create these maps, we compiled from multiple sources a dataset of hourly NO2 measurements from more than 7000 ground stations over the globe, which is a dataset that is considerably larger in size and spatio-temporal coverage than used in recent high-resolution NO2 mapping studies. For statistical modelling, geospatial predictors include Sentinel-5 satellite (Tropomi instrument) measurements, variables relating to the emission sources (e.g., road network), dispersion processes (e.g., meteorological variables), elevation and socioeconomic indicators (i.e. VIIRS nightlight data). We evaluate various statistical models including linear models, ensemble tree-based models, deep convolution models, stacked models with regularisation, and hierarchical modelling strategies and select the optimal one for mapping. Evaluation of models includes uncertainty assessment as well as spatial validation methods. 
 
 \section{Introduction}
 Opportunities in global mapping of NO2, limitation in current studies. 
@@ -27,21 +27,19 @@ As NO2 varies considerably over time (e.g., between seasons), an annual estimati
 
 Also, separation in time also affect the prediction patterns and accuracy in spatial mapping \citep{LU2020105856}.
 
+   
 
-\subsection{Main objective}
- 
+The objectives of this study are to: 
  \begin{enumerate}
-    
-\item Understanding global no2
-Patterns over time, comparing the temporal patterns between difference areas.
+\item develop a more in-depth understanding of the global modelling with external validation. 
 
 
-\item
-Comparison of patterns between high resolution mapping and Tropomi to understand the downscaled patterns.
+\item provide an open-source, high resolution, temporally-resolved global NO2 dataset.
 
-\item High resolution,  temporal global NO2 map product for 2017
-
+\item understand global NO2 patterns spatiotemporally. 
+ 
 \end{enumerate}
+
 
 
  
@@ -152,15 +150,39 @@ We show two examples in northern hemisphere and with relatively dense ground mon
 \end{figure}
 
 %4. Systematically select urban, suburban, industrial areas and compare their four temporal maps. 
+4. Comparison between day, night, weekday, weekends through (normalised) substraction or division.
 
-4. map vs. tropomi 
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.7]{fig/wen_sub_wed_0.5.pdf}
+    \caption{differences between night and day, a: weekdays, b: weekends. "wdx" and "wex" indicates "week day" and "weekend"; "xxn" and "xxd" indicates "night" and "day", "0.5" indicates the results are up-sampled to 0.5 degree resolution for visualisation. }
+    \label{fig:subdn}
+\end{figure}
+
+Observing \cref{fig:subdn}, we can summarise three patterns in terms of NO2 concentrations:
+
+1) night$>$day for weekends but not weekday
+
+This pattern may indicate lots of entertainment during night times in weekends and a relatively early rush hour after work.
+
+Germany, Belgium, France, Spain, and the Netherlands show that in weekdays, NO2 concentrations are higher at daytime but in weekends at nighttime. The same pattern is shown along the western-southern coast of Australia, middle Brazil, southern America. 
+
+2) night$>$day for weekday but not weekends
+This pattern may indicate late work schedules, which result in late rush hours. 
+Some areas, such as western China, eastern Peru and Western China, follow this pattern. 
+
+3) nigh$>$day irregardless weekdays or weekends
+As the radiation hinders the NO2 forming process, night $>$ day also occur in countries receiving high radiations during daytime. This theoretically happen to countries close to the equator. In this study, however, we observe this pattern in US, Canada except coastal areas, and Russia.  
+The night>day NO2 may be caused by incomplete road networks and less populations. (observing the SHAP values for the four day and night models
+
+5. map vs. tropomi 
 
 Comparison with the mean in areas with dense ground station networks and with deficient measurements for comparison.
 
 
 
 					
-5, further validation: 
+6, further validation: 
 1)	Compare with other large-scale maps (ESCAPE or more recent maps)
 2)	Other mobile sensing data, google car data? 
 
@@ -174,10 +196,14 @@ Incompleteness OSM is a well-recognised issue and cannot be hidden.
 %2.	On a map service, e.g. mapbox, publish the 4 maps
 %3.	In a data depository, publish the predictors and 4 result maps (possibly 100m resolution)
 
+In \cite{LU2020105856}, it was found that using an ensemble tree based algorithm, such as XGBoost \citep{chen2016xgboost}, the global model achieved a similar cross-validation accuracy in a country compared to the corresponding national models developed in countries with relatively densely distributed ground station networks. In comparison, a global linear regression model falls far behind those national models. On the one hand, it is a promising result showing that with machine learning methods, a global model could potentially catch up with the performance of a national model with relatively sufficient ground stations. On the other hand, the manuscript does not discuss the effect of unequal distribution of the ground stations in this analysis. The ground stations from countries with a relatively dense ground station network also dominate the global dataset and as a result, contributing the most to the NO2 process captured in a global model. As such, it might be too imprudent to claim that e.g. the XGB is promising in global modelling, though it is obviously outperform a linear regression model, at least with the current data availability. 
+
+
 \section{Conclusion}
 
 
-
+\bibliographystyle{plain}
+\bibliography{ref.bib}
  \section{To be clarified}
 
  1. the area (extent) of the world.   
