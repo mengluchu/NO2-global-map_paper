@@ -17,7 +17,8 @@
 
 \abstract
 
-High-resolution (100 m resolution or higher) mapping of NO2 provides opportunities to study the relationship between personal air pollution exposure and health over large populations. Statistical modelling of NO2 at the global scale provides high-resolution estimations for countries with deficient ground station measurements and provides air pollution maps and human exposures with consistent uncertainties for global health studies. Our objective is to develop temporally-resolved statistical learning models, understanding the temporal dynamics of NO2 and the contributing sources, and open-source our global NO2 prediction maps at 100 m resolution. The global maps are provided at various temporal aggregations (e.g. separating between weekdays and weekends, day and night) and spatial aggregations (e.g. multiple gridded resolutions, administrative units) to facilitate global exposure assessment. To create these maps, we compiled from multiple sources a dataset of hourly NO2 measurements from more than 7000 ground stations over the globe, which is a dataset that is considerably larger in size and spatio-temporal coverage than used in recent high-resolution NO2 mapping studies. For statistical modelling, geospatial predictors include Sentinel-5 satellite (Tropomi instrument) measurements, variables relating to the emission sources (e.g., road network), dispersion processes (e.g., meteorological variables), elevation and socioeconomic indicators (i.e. VIIRS nightlight data). We evaluate various statistical models including linear models, ensemble tree-based models, deep convolution models, stacked models with regularisation, and hierarchical modelling strategies and select the optimal one for mapping. Evaluation of models includes uncertainty assessment as well as spatial validation methods. 
+High-resolution (100 m resolution or higher) mapping of NO2 provides opportunities to study the relationship between personal air pollution exposure and health over large populations and provide air pollution maps and human exposures with consistent uncertainties for global health studies. Statistical modelling of NO2 with geospatial predictors such as road density and meteorological variables may utilise ground station measurements at countries with a relatively dense monitoring network to provide an estimation for countries with deficient ground station measurements. We predict temporally-resolved NO2 world-wide at 25 m resolution, validate our product with external validations, and analyse the spatiotemporal dynamics of NO2. The global maps are provided at various spatiotemporal aggregations %(e.g. separating between weekdays and weekends, day and night) and spatial aggregations (e.g. multiple gridded resolutions, administrative units) 
+to facilitate global exposure assessment. 
 
 \section{Introduction}
 Opportunities in global mapping of NO2, limitation in current studies. 
@@ -27,7 +28,8 @@ As NO2 varies considerably over time (e.g., between seasons), an annual estimati
 
 Also, separation in time also affect the prediction patterns and accuracy in spatial mapping \citep{LU2020105856}.
 
-   
+ Evaluation of models includes uncertainty assessment as well as spatial validation methods. 
+  
 
 The objectives of this study are to: 
  \begin{enumerate}
@@ -45,38 +47,45 @@ The objectives of this study are to:
  
 
 \section{Method}
+
+
 \subsection{Data}
+This study is a considerable extension of the study \citep{LU2020105856} in terms of the measurement and predictor data collection. Specifically, we included the most comprehensive sets of official ground station measurements of European countries, Canada, United States, and Australia. In comparison, the station measurements of theses countries relied solely on the records from OpenAQ in \cite{LU2020105856}. This results in hourly NO2 measurements of 2017 from more than 7000 ground stations over the globe. The geospatial predictors are almost completed updated from \citep{LU2020105856}, the way of buffer calculation stays the same. Specifically, the differences are: 1) the OpenStreetMaps updated on 13 Apr 2020 is used to calculate the densities of roads and industrial areas; %The Sentinel-5 satellite (Tropomi instrument) annual column density measurements of 2018 is used. 
+2) the wind strength and temperatures at 2 m altitude come from the ERA5-Land re-analysis model. 3) The elevation come from MERIT, 4) the population come from the GHS-POP R2019A. 5) The radiation is added; 6) the nightlight from the VIIRS re-sampled and aggregated over different buffers are added. All the predictors used are listed in \cref{tab-buff-pred} 
+ 
 
-Original data and source
-\begin{verbatim}
-Openstreetmap; 13 apr 2020
-MERIT DEM; 90m
-GHS-POP R2019A; 250m
-ERA5-Land; 9km
-        resolution	  nadir
-Temperature	0.1 degree	10km
-Wind 	    0.1 degree	10km
-population	0.0025 degree 	250m
-Night light	0.0042 degree	500m
-radiation	0.008	800m
-
-\end{verbatim}
-
-
-
-buffered predictor candidates \ref{tab-buff-pred}
-  
 \begin{table*}\centering
-\caption{buffered candidate predictors}
+\caption{Gridded predictors, data sources, and resolution.}
 \label{tab-buff-pred}
 \begin{tabular}{@{}lll@{}}\toprule
-type & unit & buffersizes [m] \\ \midrule
-roads 1 & m & 25, 50, 100, 300, 500, 1000, 3000, 5000 \\
-roads 2 & m& 25, 50, 100, 300, 500, 1000, 3000, 5000 \\
-roads 3 & m& 25, 50, 100, 300, 500, 1000, 3000, 5000 \\
-population  &? & 1000, 3000, 5000 \\
-industry  & $m^2$ & 25, 50, 100, 300, 500, 1000, 3000, 5000\\
-nightlight   & ?& 450, 900, 3150, 4950\\
+Variable&Source & resolution (nadir) \\ \midrule
+ 
+elevation & MERIT DEM&  90m
+radiation &?&	800m 
+Wind and temperature & ERA5-Land &  9km
+%        resolution	  nadir
+%Temperature	0.1 degree	10km
+%Wind 	    0.1 degree	10km
+%population	0.0025 degree 	250m
+%Night light	0.0042 degree	500m
+
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+ 
+\begin{table*}\centering
+\caption{Buffered predictor variables and the buffer sizes}
+\label{tab-buff-pred}
+\begin{tabular}{@{}llll@{}}\toprule
+variable & unit & original data type or resolution& buffersizes [m] \\ \midrule
+roads 1 & m &LineString&25, 50, 100, 300, 500, 1000, 3000, 5000 \\
+roads 2 & m& LineString&25, 50, 100, 300, 500, 1000, 3000, 5000 \\
+roads 3 & m& LineString&25, 50, 100, 300, 500, 1000, 3000, 5000 \\
+population  &? &250 m & 1000, 3000, 5000 \\
+industry  & $m^2$&Polygon & 25, 50, 100, 300, 500, 1000, 3000, 5000\\
+nightlight   & ?& 500 m& 450, 900, 3150, 4950\\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -85,8 +94,11 @@ none-buffered: wind, temperature, tropomi, radiation, elevation.
 
 \subsection{Data preprocessing}
 
+%OLIVER
 \subsection{Modelling}
-Modelling separated for each time step.
+
+ 
+\cite{LU2020105856} evaluated various statistical models including standard and regularised linear models and ensemble tree-based models and found the XGBoost model the most promising in global mapping. This study, the data is different, we compared again different models described in \cite{LU2020105856}
 
 We chose XGB following...
 
